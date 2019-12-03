@@ -1,0 +1,14 @@
+{
+    "serverConfig" : {
+        "serverIpAddress" : "192.168.1.123",
+        "serverPort" : 2100
+    },
+    "relays-config" : [
+        {
+            "type": "Winstar 2 relay output",
+            "ip": "192.168.1.101",
+            "port": 24,
+            "name" : "Reader Test"
+        }
+    ]
+}

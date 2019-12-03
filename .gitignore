@@ -1,0 +1,4 @@
+node_modules
+lib/*
+wr_test.*
+__*
