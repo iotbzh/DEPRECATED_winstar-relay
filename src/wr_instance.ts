@@ -35,7 +35,7 @@ import * as net from 'net';
  */
 export class WR_Instance extends WR_Core {
 
-    private socket: any;
+    private socket: net.Socket;
     private deviceIp: string;
     private devicePort: number;
     private serverIp: string;
@@ -142,7 +142,7 @@ export class WR_Instance extends WR_Core {
         if (numOut == '01') {
             this._out1.next('off');
         }
-        if (numOut == '02') {
+        else if (numOut == '02') {
             this._out2.next('off');
         }
     }
@@ -173,7 +173,7 @@ export class WR_Instance extends WR_Core {
         if (numOut == '01') {
             this._out1.next('on');
         }
-        if (numOut == '02') {
+        else if (numOut == '02') {
             this._out2.next('on');
         }
     }
@@ -197,7 +197,7 @@ export class WR_Instance extends WR_Core {
         /**
          * Subscription to the device responses.
          */
-        this.deviceEvent$.subscribe( (data: Buffer) => {
+        this.deviceEvent$.subscribe((data: Buffer) => {
             /**
              * The response with the state has 8 bytes length.
              */
@@ -221,26 +221,33 @@ export class WR_Instance extends WR_Core {
      * Sets the response as observable
      *
      * @param {string} status
+     * @returns {Error}
      * @memberof WR_Instance
      */
-    setState(status: string): void {
+    setState(status: string): Error {
 
-        if (status == 'f30f') {
-            this._out1.next('off');
-            this._out2.next('off');
+        switch (status) {
+            case 'f30f':
+                this._out1.next('off');
+                this._out2.next('off');
+                break;
+            case 'f30e':
+                this._out1.next('on');
+                this._out2.next('off');
+                break;
+            case 'f30d':
+                this._out1.next('off');
+                this._out2.next('on');
+                break
+            case 'f30c':
+                this._out1.next('on');
+                this._out2.next('on');
+                break
+            default:
+                return new Error("unknown status");
         }
-        if (status == 'f30e') {
-            this._out1.next('on');
-            this._out2.next('off');
-        }
-        if (status == 'f30d') {
-            this._out1.next('off');
-            this._out2.next('on');
-        }
-        if (status == 'f30c') {
-            this._out1.next('on');
-            this._out2.next('on');
-        }
+
+        return null;
     }
 
     /**
@@ -253,11 +260,11 @@ export class WR_Instance extends WR_Core {
     sendFrame(frame: Buffer): Error {
         try {
             this.socket.write(frame);
-
         } catch (err) {
             console.error('Problem sending frame to Winstar device.');
             return err;
         }
+        return null;
     }
 
 }
