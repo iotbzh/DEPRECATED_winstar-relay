@@ -224,7 +224,7 @@ export class WR_Instance extends WR_Core {
      * @returns {Error}
      * @memberof WR_Instance
      */
-    setState(status: string): Error {
+    private setState(status: string): Error {
 
         switch (status) {
             case 'f30f':
