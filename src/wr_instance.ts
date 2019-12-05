@@ -92,7 +92,7 @@ export class WR_Instance extends WR_Core {
          * Sets the initial connection.
          */
         this.socket = net.createConnection({ port: this.devicePort, host: this.deviceIp, localPort: this.serverPort, localAddress: this.serverIp }, () => {
-            console.log('Connection created');
+            console.log('Winstar-relay socket created.');
         });
 
         this.socket.on('connect', () => {
