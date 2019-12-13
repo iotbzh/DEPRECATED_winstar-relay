@@ -175,8 +175,8 @@ export class WR_Core {
             'ADR': split[2] + split[3],
             'CMD': split[4] + split[5],
             'LENGTH': split[6] + split[7],
-            'DATA': split[8] + split[9],
-            'XOR': split.map((val, ind, spl) => { return (ind > 9 && ind < spl.length - 2) ? val : ',' }).toString().replace(/,/gi, ''),
+            'DATA': split.map((val, ind, spl) => { return (ind > 7 && ind < spl.length - 4) ? val : ',' }).toString().replace(/,/gi, ''),
+            'XOR': split[split.length - 4] + split[split.length - 3],
             'EOF': split[split.length - 2] + split[split.length - 1]
         };
         return splitFrame;

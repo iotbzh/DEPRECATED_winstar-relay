@@ -26,6 +26,8 @@
 
 import { WR_Core } from "./wr_core";
 import { Observable, Subject } from 'rxjs';
+
+import * as dgram from 'dgram';
 import * as net from 'net';
 
 /**
@@ -35,11 +37,13 @@ import * as net from 'net';
  */
 export class WR_Instance extends WR_Core {
 
-    private socket: net.Socket;
+    private socketTCP: net.Socket;
+    private socketUDP: dgram.Socket;
     private deviceIp: string;
     private devicePort: number;
     private serverIp: string;
     private serverPort: number;
+    private protocol: string;
 
     /**
      * Both relays will set its state (on/off) as an observable.
@@ -67,7 +71,8 @@ export class WR_Instance extends WR_Core {
         serverIp: string,
         serverPort: number,
         deviceIp: string,
-        devicePort: number
+        devicePort: number,
+        protocol?: string
     ) {
         super();
         this.serverIp = serverIp;
@@ -78,6 +83,49 @@ export class WR_Instance extends WR_Core {
         this.deviceEvent$ = this._deviceEvent.asObservable();
         this.out1$ = this._out1.asObservable();
         this.out2$ = this._out2.asObservable();
+
+        this.protocol = 'udp';
+        if(protocol !== undefined){
+            this.protocol = protocol;
+        }
+
+    }
+
+    connectUDP() {
+
+        /**
+         * Bound the server with the ip address and port
+         */
+        this.socketUDP = dgram.createSocket({ 'type': 'udp4', 'reuseAddr': true });
+
+       this.socketUDP.bind({
+            address: this.serverIp,
+            port: this.serverPort,
+            exclusive: true,
+        });
+        /**
+         * Once server is bound we check it is working
+         */
+        this.socketUDP.on('listening', () => {
+            console.log('Listening on UPD for Winstar-relay from '+this.deviceIp+':' + this.devicePort);
+        });
+
+        /**
+         * Once server is bound we set the 'listening events' function
+         */
+        this.socketUDP.on('message', (data, rinfo) => {
+            console.log('message', data.toString('hex'), rinfo);
+            this._deviceEvent.next(data);
+        });
+
+        this.socketUDP.on('error', (error) => {
+            console.log(error);
+            console.log('Cannot listen on UPD for Winstar-relay');
+        })
+        this.socketUDP.on('connect', (error) => {
+            console.log(error);
+            console.log('Connect');
+        })
     }
 
     /**
@@ -85,17 +133,17 @@ export class WR_Instance extends WR_Core {
      *
      * @memberof WR_Instance
      */
-    connect() {
+    connectTCP() {
 
         /**
          * net.createConnection()
          * Sets the initial connection.
          */
-        this.socket = net.createConnection({ port: this.devicePort, host: this.deviceIp, localPort: this.serverPort, localAddress: this.serverIp }, () => {
+        this.socketTCP = net.createConnection({ port: this.devicePort, host: this.deviceIp, localPort: this.serverPort, localAddress: this.serverIp }, () => {
             console.log('Winstar-relay socket created.');
         });
 
-        this.socket.on('connect', () => {
+        this.socketTCP.on('connect', () => {
             console.log('New Winstar-relay connection:' + this.deviceIp + ':' + this.devicePort);
         });
 
@@ -103,7 +151,7 @@ export class WR_Instance extends WR_Core {
          * socket.on('data')
          * Tracks all responses from the device to the server.
          */
-        this.socket.on('data', (data: Buffer) => {
+        this.socketTCP.on('data', (data: Buffer) => {
             this._deviceEvent.next(data);
         });
 
@@ -111,7 +159,7 @@ export class WR_Instance extends WR_Core {
          * socket.on('error')
          * Tracks errors connections between server and device.
          */
-        this.socket.on('error', (err: any) => {
+        this.socketTCP.on('error', (err: any) => {
             console.log(err);
         });
     }
@@ -259,7 +307,12 @@ export class WR_Instance extends WR_Core {
      */
     sendFrame(frame: Buffer): Error {
         try {
-            this.socket.write(frame);
+            if (this.protocol == 'tcp') {
+                this.socketTCP.write(frame);
+            } else {
+                console.log('send');
+                this.socketUDP.send(frame, 0, frame.length, this.devicePort, this.deviceIp, () => {});
+            }
         } catch (err) {
             console.error('Problem sending frame to Winstar device.');
             return err;

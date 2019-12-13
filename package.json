@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node-dev --cls --respawn ./src/wr_test.ts --watch ./src/wr_test.ts "
+    "start:dev": "ts-node-dev --cls --respawn ./src/wr_test.ts --watch ./src/wr_test.ts "
   },
   "author": "Rodrigo Fernandez - Iot.Bzh",
   "license": "GPL-3.0",
