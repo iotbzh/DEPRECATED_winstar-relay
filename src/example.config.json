@@ -8,7 +8,8 @@
             "type": "Winstar 2 relay output",
             "ip": "172.25.50.235",
             "port": 24,
-            "name" : "Reader Test"
+            "name" : "Reader Test",
+            "connection": "udp"
         }
     ]
 }

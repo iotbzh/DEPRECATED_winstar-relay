@@ -107,7 +107,7 @@ export class WR_Instance extends WR_Core {
          * Once server is bound we check it is working
          */
         this.socketUDP.on('listening', () => {
-            console.log('Listening on UPD for Winstar-relay from '+this.deviceIp+':' + this.devicePort);
+            console.log('Listening on UDP for Winstar-relay from '+this.deviceIp+':' + this.devicePort);
         });
 
         /**
@@ -307,11 +307,16 @@ export class WR_Instance extends WR_Core {
      */
     sendFrame(frame: Buffer): Error {
         try {
-            if (this.protocol == 'tcp') {
-                this.socketTCP.write(frame);
-            } else {
-                console.log('send');
-                this.socketUDP.send(frame, 0, frame.length, this.devicePort, this.deviceIp, () => {});
+            switch (this.protocol) {
+                case 'udp':
+                    this.socketUDP.send(frame, 0, frame.length, this.devicePort, this.deviceIp, () => {});
+                    break;
+                case 'tcp':
+                    this.socketTCP.write(frame);
+                    break;
+
+                default:
+                    throw Error;
             }
         } catch (err) {
             console.error('Problem sending frame to Winstar device.');
