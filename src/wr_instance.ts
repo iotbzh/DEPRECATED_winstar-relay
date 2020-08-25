@@ -85,7 +85,7 @@ export class WR_Instance extends WR_Core {
         this.out2$ = this._out2.asObservable();
 
         this.protocol = 'udp';
-        if(protocol !== undefined){
+        if (protocol !== undefined) {
             this.protocol = protocol;
         }
 
@@ -98,7 +98,7 @@ export class WR_Instance extends WR_Core {
          */
         this.socketUDP = dgram.createSocket({ 'type': 'udp4', 'reuseAddr': true });
 
-       this.socketUDP.bind({
+        this.socketUDP.bind({
             address: this.serverIp,
             port: this.serverPort,
             exclusive: true,
@@ -107,7 +107,7 @@ export class WR_Instance extends WR_Core {
          * Once server is bound we check it is working
          */
         this.socketUDP.on('listening', () => {
-            console.log('Listening on UDP for Winstar-relay from '+this.deviceIp+':' + this.devicePort);
+            console.log('Listening on UDP for Winstar-relay from ' + this.deviceIp + ':' + this.devicePort);
         });
 
         /**
@@ -118,11 +118,11 @@ export class WR_Instance extends WR_Core {
             this._deviceEvent.next(data);
         });
 
-        this.socketUDP.on('error', (error) => {
+        this.socketUDP.on('error', (error: any) => {
             console.log(error);
             console.log('Cannot listen on UPD for Winstar-relay');
         })
-        this.socketUDP.on('connect', (error) => {
+        this.socketUDP.on('connect', (error: any) => {
             console.log(error);
             console.log('Connect');
         })
